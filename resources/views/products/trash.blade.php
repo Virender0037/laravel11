@@ -34,6 +34,7 @@
                     <td>{{ $product->user->name }}</td>
                     <td>
                     {{-- Restore Button --}}
+                    @can('restore', $product)
                     <form method="POST" action="{{ route('products.restore', $product->id) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -41,7 +42,9 @@
                         Restore
                         </button>
                     </form>
+                    @endcan
                     {{-- Delete Button (using a separate form for correct HTTP method handling) --}}
+                    @can('forcedelete', $product)
                     <form method="POST" action="{{ route('products.permanentdelete', $product->id) }}" style="display:inline;">
                         @csrf
                         @method('DELETE')
@@ -49,6 +52,7 @@
                         Permanently Delete
                         </button>
                     </form>
+                    @endcan
                     </td>
                 </tr>
             @endforeach

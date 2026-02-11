@@ -1,8 +1,8 @@
 <div>
     <h1>Products Listing</h1>
-    @if(auth()->user()->is_admin == 1)
+    @can('create', \App\Models\Products::class)
     <a href="{{route('products.create')}}" class="btn btn-primary">Create Product</a>
-    @endif  
+    @endcan
     <div>
     <a href="{{route('dashboard')}}" class="btn btn-primary">Back</a>
     </div>
@@ -40,7 +40,11 @@
                     <td>{{ $product->status }}</td>
                     <td>{{ $product->user->name }}</td>
                     <td>
+                    @can('update', $product)
                     <a href="{{ route('products.edit', $product->id) }}" class="btn btn-primary">Edit</a>
+                    @endcan
+
+                    @can('delete', $product)
                     <form method="POST" action="{{ route('products.destroy', $product->id) }}" style="display:inline;">
                         @csrf
                         @method('DELETE')
@@ -48,6 +52,7 @@
                             Delete
                         </button>
                     </form>
+                    @endcan
                     </td>
                 </tr>
             @endforeach

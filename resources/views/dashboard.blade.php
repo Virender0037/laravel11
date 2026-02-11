@@ -8,21 +8,26 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                @if(auth()->user()->is_admin == 1)
+                @can('create', \App\Models\Products::class)
                 <div class="p-6 text-gray-900">
                     <a href="{{route('products.create')}}" >{{ __("Create Products") }}</a>
                 </div>
+                @endcan
+
+                @can('viewAny', \App\Models\Products::class)
                 <div class="p-6 text-gray-900">
                     <a href="{{route('products.index')}}" >{{ __(" View Products") }}</a>
                 </div>
+                @endcan
+                
+                @can('viewTrashed', \App\Models\Products::class)
                 <div class="p-6 text-gray-900">
                     <a href="{{route('products.trash')}}" >{{ __("View Trashed Products") }}</a>
                 </div>
-                @else
+                @endcan
                 <div class="p-6 text-gray-900">
                     <a href="{{route('products.index')}}" >{{ __(" View Products") }}</a>
                 </div>
-                @endif
             </div>
         </div>
     </div>
