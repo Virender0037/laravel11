@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Requests\CreateProductRequest;
+use App\Actions\Products\CreateProductAction;   
+use App\Actions\Products\UpdateProductAction;   
+use App\Actions\Products\DeleteProductAction;
+use App\Actions\Products\RestoreProductAction;
+use App\Actions\Products\ForceDeleteProductAction;
 use App\Models\Products;
 
 class ProductController extends Controller
@@ -50,10 +55,9 @@ class ProductController extends Controller
         return view('products.trash', compact('Products'));
     }
 
-    public function restore(Products $product){
+    public function restore(Products $product, RestoreProductAction $action){
         $this->authorize('restore', $product);
-        if ($product->trashed()) { 
-            $product->restore();
+        if ($action->execute($product)) { 
             return redirect()->route('products.index')->with('success', 'Product restored successfully.');
         }
             return redirect()
@@ -61,17 +65,17 @@ class ProductController extends Controller
             ->with('info', 'Product is not deleted.');
     }
 
-    public function forcedelete(Products $product){
+    public function forcedelete(Products $product, ForceDeleteProductAction $action){
       $this->authorize('forcedelete', $product);
-        if (! $product->trashed()) {
-            return redirect()->route('products.trash')->with('success', 'Product is not deleted.');
-        }
-        $product->forceDelete();
+      if($action->execute($product)){
         return redirect()
         ->route('products.trash')
         ->with('success', 'Product permanently deleted.');
-    }
-
+        }
+        return redirect()
+        ->route('products.trash')
+        ->with('success', 'Product is not deleted.');
+        }
     /**
      * Show the form for creating a new resource.
      */
@@ -83,12 +87,9 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateProductRequest $request)
+    public function store(CreateProductRequest $request, CreateProductAction $action)
     {   
-        $userId = Auth::id();
-        $validatedData = $request->validated();
-        $validatedData['created_by'] = $userId;
-        Products::create($validatedData);
+        $action->execute($request->validated());
         return redirect()->route('products.index')->with('success', 'Product created successfully!');
     }
 
@@ -111,19 +112,18 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProductRequest $request, Products $product)
+    public function update(UpdateProductRequest $request, Products $product, UpdateProductAction $action)
     {   
-        $validatedData = $request->validated();
-        $product->update($validatedData);
+        $action->execute($product, $request->validated());
         return redirect()->route('products.index')->with('success', 'Products updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Products $product)
+    public function destroy(Products $product, DeleteProductAction $action)
     {   
-        $product->delete();
+        $action->execute($product);
         return redirect()->route('products.index')->with('success', 'Products deleted successfully.');
     }
 }
